@@ -1,0 +1,11 @@
+<h1>Editar tarea</h1>
+
+<form action="/editar/<%= tarea.id %>" method="POST">
+  <input type="text" name="titulo" value="<%= tarea.titulo %>" required>
+  <br>
+  <textarea name="descripcion"><%= tarea.descripcion %></textarea>
+  <br>
+  <button>Guardar cambios</button>
+</form>
+
+<a href="/">Volver</a>

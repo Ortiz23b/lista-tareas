@@ -1,0 +1,23 @@
+<h1>Lista de tareas</h1>
+
+<form action="/agregar" method="POST">
+  <input type="text" name="titulo" placeholder="Título" required>
+  <br>
+  <textarea name="descripcion" placeholder="Descripción"></textarea>
+  <br>
+  <button>Agregar</button>
+</form>
+
+<h2>Tareas</h2>
+<ul>
+  <% tareas.forEach(t => { %>
+    <li>
+      <strong><%= t.titulo %></strong>
+      <a href="/tarea/<%= t.id %>">Ver</a>
+      |
+      <a href="/editar/<%= t.id %>">Editar</a>
+      |
+      <a href="/eliminar/<%= t.id %>">Eliminar</a>
+    </li>
+  <% }) %>
+</ul>
