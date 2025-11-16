@@ -1,60 +1,48 @@
-const express = require("express");
-const sqlite3 = require("sqlite3").verbose();
-const path = require("path");
+const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 
 const app = express();
-const db = new sqlite3.Database("tareas.db");
 
+// Configurar motor de plantillas
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Middleware para recibir datos de formularios
 app.use(express.urlencoded({ extended: true }));
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
 
-db.run(`
-  CREATE TABLE IF NOT EXISTS tareas (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    titulo TEXT NOT NULL,
-    descripcion TEXT
-  )
-`);
+// Base de datos SQLite
+const db = new sqlite3.Database('tareas.db');
 
-app.get("/", (req, res) => {
-  db.all("SELECT * FROM tareas", [], (err, rows) => {
-    res.render("index", { tareas: rows });
+// Crear tabla si no existe
+db.run('CREATE TABLE IF NOT EXISTS tareas (id INTEGER PRIMARY KEY AUTOINCREMENT, descripcion TEXT)');
+
+// Ruta principal
+app.get('/', (req, res) => {
+  db.all('SELECT * FROM tareas', (err, filas) => {
+    res.render('index', { tareas: filas });
   });
 });
 
-app.get("/tarea/:id", (req, res) => {
-  db.get("SELECT * OF tareas WHERE id = ?", [req.params.id], (err, row) => {
-    res.render("ver", { tarea: row });
+// Agregar tarea
+app.post('/agregar', (req, res) => {
+  const descripcion = req.body.descripcion;
+  db.run('INSERT INTO tareas (descripcion) VALUES (?)', descripcion, () => {
+    res.redirect('/');
   });
 });
 
-app.post("/agregar", (req, res) => {
-  const { titulo, descripcion } = req.body;
-  db.run("INSERT INTO tareas(titulo, descripcion) VALUES(?,?)",
-    [titulo, descripcion],
-    () => res.redirect("/")
-  );
-});
-
-app.get("/editar/:id", (req, res) => {
-  db.get("SELECT * FROM tareas WHERE id=?", [req.params.id], (err, row) => {
-    res.render("editar", { tarea: row });
+// Borrar tarea
+app.post('/borrar/:id', (req, res) => {
+  const id = req.params.id;
+  db.run('DELETE FROM tareas WHERE id = ?', id, () => {
+    res.redirect('/');
   });
 });
 
-app.post("/editar/:id", (req, res) => {
-  const { titulo, descripcion } = req.body;
-  db.run("UPDATE tareas SET titulo=?, descripcion=? WHERE id=?",
-    [titulo, descripcion, req.params.id],
-    () => res.redirect("/")
-  );
-});
+// USAR EL PUERTO DE RAILWAY
+const PORT = process.env.PORT || 3000;
 
-app.get("/eliminar/:id", (req, res) => {
-  db.run("DELETE FROM tareas WHERE id=?", [req.params.id], () => {
-    res.redirect("/");
-  });
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 });
-
-app.listen(process.env.PORT || 3000);
